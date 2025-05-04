@@ -1,16 +1,28 @@
-import mysql from 'mysql2';
-
-export const db = mysql.createConnection({
-  host: 'localhost',
+const dbConfig = {
+  host: '127.0.0.1',
   user: 'root',
-  password: '',
-  database: 'gestion'
-});
+  password: '', // Ajusta esto según tu configuración
+  database: 'gestion',
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0
+};
 
-db.connect((err) => {
-  if (err) {
-    console.error('Error conectando a la base de datos: ' + err.stack);
-    return;
+// Crear un pool de conexiones en lugar de una única conexión
+export const pool = mysql.createPool(dbConfig);
+
+// Función para probar la conexión
+export const testConnection = async () => {
+  try {
+    const connection = await pool.getConnection();
+    console.log('✅ Conexión a la base de datos establecida correctamente');
+    connection.release();
+    return true;
+  } catch (error) {
+    console.error('❌ Error al conectar con la base de datos:', error.message);
+    return false;
   }
-  console.log('Conectado a la base de datos con el id ' + db.threadId);
-});
+};
+
+// Inicializar la conexión al importar este módulo
+testConnection();
